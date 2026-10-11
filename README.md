@@ -28,6 +28,21 @@ npm run build && npm start
 
 App Android (làm bằng Capacitor) chứa sẵn toàn bộ trang web và bộ Python trong file APK, nên học sinh cài xong là dùng offline được ngay, không cần tải gì thêm. Bản web trên Vercel không bị ảnh hưởng.
 
+Có hai cách build: trên GitHub (không cần cài gì) hoặc trên máy bằng Android Studio.
+
+### Build trên GitHub (không cần cài gì)
+
+Mỗi lần push lên nhánh `main`, GitHub tự build APK (file `.github/workflows/android.yml`). Để tải về:
+
+1. Vào repo trên GitHub, mở tab **Actions**, chọn lần chạy **Build APK** mới nhất (có dấu tích xanh).
+2. Kéo xuống mục **Artifacts**, bấm **soat-loi-python-apk** để tải file `.zip`, giải nén ra `app-debug.apk`.
+
+Muốn build lại mà không cần push: ở tab **Actions** chọn **Build APK → Run workflow**.
+
+Lưu ý: mỗi lần build trên GitHub, APK được ký bằng một khóa debug mới, nên muốn cài bản mới lên điện thoại phải gỡ bản cũ trước.
+
+### Build trên máy bằng Android Studio
+
 Cần cài trước:
 
 - **Node.js 22** trở lên
@@ -47,16 +62,16 @@ Trong Android Studio, chọn **Build → Generate App Bundles or APKs → Genera
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Cài lên điện thoại:
+### Cài lên điện thoại
 
 1. Chép file `app-debug.apk` vào điện thoại (qua cáp USB, Zalo, Google Drive...).
 2. Mở file trên điện thoại. Lần đầu, Android sẽ hỏi có cho phép cài ứng dụng không rõ nguồn gốc không: bấm **Cài đặt**, bật **Cho phép từ nguồn này** cho ứng dụng đang dùng để mở file (Trình quản lý tệp, Zalo, Chrome...), rồi quay lại bấm **Cài đặt**.
 
-Mỗi lần sửa code:
+### Mỗi lần sửa code
 
 1. Chạy lại `npm run android`.
 2. Tăng `versionCode` trong `android/app/build.gradle` (ví dụ từ `1` lên `2`) để điện thoại nhận đây là bản mới và cài đè lên bản cũ.
-3. Build lại APK như trên.
+3. Build lại APK như trên (hoặc push lên GitHub để GitHub tự build).
 
 ## Cấu trúc
 

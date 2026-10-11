@@ -1,0 +1,38 @@
+# Build file APK trên máy chủ GitHub (có sẵn Android SDK) -> không cần cài Android Studio.
+# Chạy mỗi khi push lên main, hoặc bấm "Run workflow" ở tab Actions.
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      # npm ci tự chép Pyodide vào public/pyodide (postinstall)
+      - run: npm ci
+      - run: npm run android
+
+      - run: ./gradlew assembleDebug
+        working-directory: android
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: soat-loi-python-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
