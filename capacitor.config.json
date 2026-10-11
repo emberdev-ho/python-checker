@@ -1,0 +1,8 @@
+{
+  "appId": "vn.soatloi.python",
+  "appName": "Soát lỗi Python",
+  "webDir": "out",
+  "android": {
+    "backgroundColor": "#f8f9fc"
+  }
+}

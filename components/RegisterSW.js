@@ -3,8 +3,10 @@
 import { useEffect } from 'react';
 
 // Đăng ký Service Worker để lưu toàn bộ app vào máy -> lần sau mở được khi không có mạng.
+// App Android (Capacitor) đã chứa sẵn mọi tệp trong APK nên không cần Service Worker.
 export default function RegisterSW() {
   useEffect(() => {
+    if (window.Capacitor?.isNativePlatform?.()) return;
     if (process.env.NODE_ENV !== 'production' || !('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register('/sw.js').then(async () => {
       const reg = await navigator.serviceWorker.ready;

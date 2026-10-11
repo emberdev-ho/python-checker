@@ -24,6 +24,40 @@ npm run build && npm start
 1. Đẩy thư mục này lên một repo GitHub.
 2. Vào vercel.com, chọn **Add New → Project**, chọn repo, giữ nguyên cài đặt mặc định, bấm **Deploy**.
 
+## Đóng gói thành app Android (APK)
+
+App Android (làm bằng Capacitor) chứa sẵn toàn bộ trang web và bộ Python trong file APK, nên học sinh cài xong là dùng offline được ngay, không cần tải gì thêm. Bản web trên Vercel không bị ảnh hưởng.
+
+Cần cài trước:
+
+- **Node.js 22** trở lên
+- **Android Studio** (có sẵn Android SDK và Java)
+
+Tạo project Android và mở bằng Android Studio:
+
+```bash
+npm install
+npm run android        # build trang web rồi chép vào thư mục android/
+npm run android:open   # mở thư mục android/ bằng Android Studio
+```
+
+Trong Android Studio, chọn **Build → Generate App Bundles or APKs → Generate APKs**. Khi build xong, file APK nằm ở:
+
+```
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Cài lên điện thoại:
+
+1. Chép file `app-debug.apk` vào điện thoại (qua cáp USB, Zalo, Google Drive...).
+2. Mở file trên điện thoại. Lần đầu, Android sẽ hỏi có cho phép cài ứng dụng không rõ nguồn gốc không: bấm **Cài đặt**, bật **Cho phép từ nguồn này** cho ứng dụng đang dùng để mở file (Trình quản lý tệp, Zalo, Chrome...), rồi quay lại bấm **Cài đặt**.
+
+Mỗi lần sửa code:
+
+1. Chạy lại `npm run android`.
+2. Tăng `versionCode` trong `android/app/build.gradle` (ví dụ từ `1` lên `2`) để điện thoại nhận đây là bản mới và cài đè lên bản cũ.
+3. Build lại APK như trên.
+
 ## Cấu trúc
 
 | Tệp | Vai trò |
@@ -35,6 +69,8 @@ npm run build && npm start
 | `components/ResultPanel.js` | Bảng "Lời phê" |
 | `public/sw.js` | Lưu app vào máy để chạy offline |
 | `scripts/test-explain.mjs` | Chạy thử bộ luật: `npm test` |
+| `capacitor.config.json` | Cấu hình app Android (tên app, mã app) |
+| `android/` | Project Android do Capacitor tạo, mở bằng Android Studio |
 
 ## Thêm luật dịch lỗi mới
 

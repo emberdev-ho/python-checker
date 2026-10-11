@@ -3,3 +3,7 @@ node_modules
 out
 # Sinh tự động khi npm install
 public/pyodide
+# Sinh tự động khi chạy npm run android
+android/app/src/main/assets/public
+android/.gradle
+android/**/build/

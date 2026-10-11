@@ -10,9 +10,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "npx serve@14.2.4 out",
-    "test": "node scripts/test-explain.mjs"
+    "test": "node scripts/test-explain.mjs",
+    "android": "next build && npx cap sync android",
+    "android:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2",
     "@codemirror/commands": "6.11.1",
     "@codemirror/lang-python": "6.2.1",
     "@codemirror/language": "6.12.4",
@@ -34,5 +38,8 @@
     "@codemirror/language": "6.12.4",
     "@codemirror/commands": "6.11.1",
     "@lezer/highlight": "1.2.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
   }
 }
