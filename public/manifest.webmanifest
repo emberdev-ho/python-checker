@@ -1,0 +1,11 @@
+{
+  "name": "Soát lỗi Python",
+  "short_name": "Soát lỗi",
+  "description": "Kiểm tra lỗi cú pháp Python bằng tiếng Việt, chạy offline",
+  "lang": "vi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fc",
+  "theme_color": "#1d2f7a",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

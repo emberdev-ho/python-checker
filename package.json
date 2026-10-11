@@ -1,0 +1,38 @@
+{
+  "name": "soat-loi-python",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kiểm tra lỗi cú pháp Python cho học sinh, chạy offline trong trình duyệt, không dùng AI",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node scripts/copy-pyodide.mjs",
+    "prebuild": "node scripts/copy-pyodide.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve@14.2.4 out",
+    "test": "node scripts/test-explain.mjs"
+  },
+  "dependencies": {
+    "@codemirror/commands": "6.11.1",
+    "@codemirror/lang-python": "6.2.1",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/lint": "6.9.7",
+    "@codemirror/state": "6.7.5",
+    "@codemirror/view": "6.43.12",
+    "@fontsource/be-vietnam-pro": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@lezer/highlight": "1.2.3",
+    "codemirror": "6.0.2",
+    "next": "15.5.26",
+    "pyodide": "0.27.8",
+    "react": "19.1.9",
+    "react-dom": "19.1.9"
+  },
+  "overrides": {
+    "@codemirror/view": "6.43.12",
+    "@codemirror/state": "6.7.5",
+    "@codemirror/language": "6.12.4",
+    "@codemirror/commands": "6.11.1",
+    "@lezer/highlight": "1.2.3"
+  }
+}
