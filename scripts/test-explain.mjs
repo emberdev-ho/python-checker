@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { loadPyodide } from 'pyodide';
 import { explainPython } from '../lib/explainPython.js';
+import { SAMPLES } from '../lib/samples.js';
 
 const worker = readFileSync(new URL('../public/py-worker.js', import.meta.url), 'utf8');
 const CHECKER = worker.match(/const CHECKER = `([\s\S]*?)`;/)[1];
@@ -59,5 +60,13 @@ for (const [name, code] of Object.entries(CASES)) {
   const tag = r.ok ? 'OK ' : 'LỖI';
   console.log(`${tag} ${name.padEnd(20)} → ${r.ok ? 'Không lỗi cú pháp' : `Dòng ${r.line}:${r.col}  ${r.title}`}${r.warnings.length ? `  [cảnh báo: ${r.warnings.map((w) => w.title).join('; ')}]` : ''}`);
   if (!r.ok && r.title === 'Viết sai cú pháp') { fails++; console.log('     (chưa có luật riêng) Python báo:', raw.msg); }
+}
+
+// Bài mẫu (nút "Nạp bài có lỗi để thử") phải có lỗi cú pháp và có giải thích riêng
+for (const code of SAMPLES) {
+  const r = explainPython(JSON.parse(check(code)), code);
+  const name = code.split('\n')[0].replace(/^#\s*/, '');
+  console.log(`MẪU ${name.slice(0, 40).padEnd(40)} → ${r.ok ? 'KHÔNG CÓ LỖI' : `Dòng ${r.line}:${r.col}  ${r.title}`}`);
+  if (r.ok || r.title === 'Viết sai cú pháp') fails++;
 }
 console.log(fails ? `\n${fails} trường hợp chỉ có giải thích chung.` : '\nTất cả trường hợp đều có giải thích riêng.');
