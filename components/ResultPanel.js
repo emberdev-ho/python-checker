@@ -1,14 +1,6 @@
 'use client';
 
-// Hiển thị chuỗi có `code` thành chữ thường xen lẫn thẻ <code>
-function Rich({ text }) {
-  if (!text) return null;
-  return text.split(/(`[^`]+`)/g).map((part, i) =>
-    part.startsWith('`') && part.endsWith('`') && part.length > 1
-      ? <code key={i}>{part.slice(1, -1)}</code>
-      : <span key={i}>{part}</span>
-  );
-}
+import Rich from '@/components/Rich';
 
 // Trích đoạn code quanh dòng lỗi, có dấu ^ chỉ đúng cột
 function Snippet({ code, line, col, onGoTo }) {
@@ -94,7 +86,7 @@ export default function ResultPanel({ view, result, stale, code, pyStatus, onGoT
             <div className="stamp" aria-hidden="true"><span>Đạt</span></div>
             <div>
               <p className="pass-title">Không có lỗi cú pháp</p>
-              <p className="pass-note">Code viết đúng quy tắc của Python. Bước tiếp theo là chạy thử với các bộ test để kiểm tra kết quả và thời gian chạy.</p>
+              <p className="pass-note">Code viết đúng quy tắc của Python. Xem chương trình chạy ra gì ở khung <b>Kết quả chạy</b>.</p>
             </div>
           </div>
           <Warnings items={result.warnings} onGoTo={onGoTo} />

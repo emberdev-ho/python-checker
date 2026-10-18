@@ -1,6 +1,6 @@
 // Service Worker: lưu app vào bộ nhớ trình duyệt để dùng offline.
 // Khi sửa code và deploy bản mới, tăng số phiên bản để trình duyệt tải lại.
-const CACHE = 'soat-loi-python-v1';
+const CACHE = 'soat-loi-python-v2';
 
 const PRECACHE = [
   '/',

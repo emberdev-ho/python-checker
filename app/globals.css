@@ -219,15 +219,25 @@ kbd {
 .editor-host .cm-gutter-lint { width: 14px; }
 .editor-host .cm-diagnostic-error { border-left-color: var(--red); }
 
+/* ---------- Cột bên phải: lời phê + kết quả chạy ---------- */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  max-height: calc(100dvh - 32px);
+}
+
 /* ---------- Bảng lời phê ---------- */
 .verdict {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 18px 20px 22px;
-  position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 16px);
-  max-height: calc(100dvh - 32px);
+  flex: 0 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -381,6 +391,113 @@ code {
   cursor: pointer;
 }
 
+/* ---------- Kết quả chạy ---------- */
+.console {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.console.is-stale .console-body { opacity: 0.55; }
+
+.console-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 10px 12px 10px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.console-heading { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+.console-head .btn-quiet { padding: 4px 10px; margin-left: auto; }
+
+.run-badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 1px 9px;
+  border-radius: 999px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.run-busy { color: var(--amber); background: var(--amber-wash); border-color: transparent; animation: blink 1.2s ease-in-out infinite; }
+.run-wait { color: var(--ink); background: var(--selection); border-color: transparent; }
+.run-ok { color: var(--green); background: var(--green-wash); border-color: transparent; }
+.run-bad { color: var(--red); background: var(--red-wash); border-color: transparent; }
+
+.console-stale { margin: 10px 12px 0; }
+
+.console-body {
+  min-height: 120px;
+  max-height: 42dvh;
+  overflow-y: auto;
+  padding: 12px 20px 14px;
+  background-color: var(--paper);
+}
+
+.console-out {
+  font-family: var(--font-code);
+  font-variant-ligatures: none;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.out-in { color: var(--ink); font-weight: 600; }
+.out-err { color: var(--red); }
+
+/* Ô nhập nằm ngay sau dòng nhắc, như cửa sổ dòng lệnh */
+.console-in {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  max-width: 100%;
+  padding: 0 4px;
+  margin: 0;
+  border: none;
+  border-bottom: 2px solid var(--ink);
+  border-radius: 0;
+  background: var(--selection);
+  outline: none;
+  vertical-align: baseline;
+}
+.console-in:focus { background: var(--match); }
+
+.console-empty { color: var(--muted); font-size: 0.92rem; }
+.console-empty p { margin: 0 0 8px; }
+.console-empty p:last-child, p.console-empty { margin-bottom: 0; }
+p.console-empty { margin-top: 0; }
+.console-note { margin: 10px 0 0; font-size: 0.88rem; color: var(--muted); }
+.console-note:first-child { margin-top: 0; }
+.console-note.is-bad { color: var(--red); }
+
+.run-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--red-wash);
+  border-left: 3px solid var(--red);
+  border-radius: 4px;
+  font-size: 0.92rem;
+}
+.run-error .where { background: var(--panel); }
+.run-error p { margin: 6px 0 0; }
+.run-error-title { font-weight: 700; color: var(--text); }
+
+.console-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+.btn-send { background: var(--ink); color: var(--paper); padding: 6px 18px; }
+.btn-send:hover { filter: brightness(1.12); }
+.console-hint { color: var(--muted); font-size: 0.82rem; flex: 1 1 200px; }
+
 .foot { color: var(--muted); font-size: 0.85rem; }
 
 @keyframes blink { 50% { opacity: 0.4; } }
@@ -396,10 +513,18 @@ code {
 /* ---------- Điện thoại / máy tính bảng ---------- */
 @media (max-width: 900px) {
   .workspace { grid-template-columns: 1fr; }
-  .verdict { position: static; max-height: none; }
+  .side { position: static; max-height: none; }
+  .verdict { overflow: visible; }
+  .console-body { max-height: 55dvh; }
   .paper { height: max(360px, 55dvh); }
   .kbd-hint, .spacer { display: none; }
   .toolbar { gap: 4px; }
   .btn-primary { flex: 1 0 100%; }
   .btn-quiet { font-size: 0.92rem; padding: 6px 8px; }
+}
+
+/* Màn hình cảm ứng: chữ trong ô nhập từ 16px để iPhone không tự phóng to khi bấm vào */
+@media (pointer: coarse) {
+  .console-in { font-size: 16px; }
+  .console-actions .btn { padding-top: 9px; padding-bottom: 9px; }
 }

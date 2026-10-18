@@ -1,10 +1,21 @@
 # Soát lỗi Python
 
-App giúp học sinh kiểm tra lỗi cú pháp Python trước khi nộp bài thi tin học: dán code, bấm **Kiểm tra**, app chỉ ra dòng/cột sai, gạch đỏ chỗ sai và giải thích cách sửa bằng tiếng Việt.
+App giúp học sinh kiểm tra lỗi cú pháp Python trước khi nộp bài thi tin học: dán code, bấm **Kiểm tra**, app chỉ ra dòng/cột sai, gạch đỏ chỗ sai và giải thích cách sửa bằng tiếng Việt. Nếu code đúng cú pháp, app chạy thử luôn và hiện kết quả ở khung **Kết quả chạy**.
 
 - **Không dùng AI**: dùng Python thật (Pyodide, chạy bằng WebAssembly) để tìm lỗi, rồi dùng bộ luật trong `lib/explainPython.js` để dịch sang tiếng Việt.
 - **Chạy offline**: mở app một lần khi có mạng, sau đó dùng được khi mất mạng. Code không gửi đi đâu.
 - **Host miễn phí trên Vercel**: app là trang tĩnh, không cần server.
+
+## Chạy thử chương trình
+
+Khi code không có lỗi cú pháp, bấm **Kiểm tra** sẽ chạy chương trình và in kết quả ở khung **Kết quả chạy** (dùng được trên web, điện thoại và app Android).
+
+- Chương trình cần nhập (`input()`, `sys.stdin.readline()`) thì ô nhập hiện ngay sau dòng nhắc: gõ giá trị rồi nhấn Enter hoặc bấm **Gửi**. Dán nhiều dòng cùng lúc thì mỗi dòng là một lần nhập.
+- Chương trình đọc đến hết dữ liệu (`sys.stdin.read()`, `for line in sys.stdin`) thì nhập xong bấm **Kết thúc nhập**.
+- Lỗi khi chạy (chia cho 0, nhập chữ vào `int()`...) được gạch đỏ ở dòng bị lỗi và giải thích bằng tiếng Việt.
+- Chương trình chạy quá 10 giây (thường do vòng lặp vô hạn) hoặc in ra quá nhiều sẽ tự dừng. Bấm **Dừng** để dừng bất cứ lúc nào.
+
+Python trong trình duyệt không dừng giữa chừng để chờ gõ phím được, nên mỗi lần nhập thêm một dòng, app chạy lại chương trình từ đầu với tất cả các dòng đã nhập. `random` được gieo cùng một seed trong cả lượt chạy để kết quả các lần chạy lại giống nhau.
 
 ## Chạy trên máy
 
@@ -77,13 +88,17 @@ android/app/build/outputs/apk/debug/app-debug.apk
 
 | Tệp | Vai trò |
 |---|---|
-| `public/py-worker.js` | Chạy Python trong Web Worker, gọi `compile()` để tìm lỗi |
+| `public/py-worker.js` | Chạy Python trong Web Worker: gọi `compile()` để tìm lỗi, và chạy thử chương trình |
 | `lib/explainPython.js` | Bộ luật dịch lỗi sang tiếng Việt + nhận diện thói quen C++/Pascal |
 | `lib/samples.js` | Các bài mẫu có lỗi để thử |
 | `components/CodeEditor.js` | Khung soạn code (CodeMirror), gạch đỏ chỗ sai |
 | `components/ResultPanel.js` | Bảng "Lời phê" |
+| `components/RunPanel.js` | Khung "Kết quả chạy", ô nhập dữ liệu |
+| `lib/useRunner.js` | Điều khiển một lượt chạy thử: chờ nhập, chạy lại, giới hạn thời gian |
+| `lib/explainRuntime.js` | Bộ luật dịch lỗi khi chạy (`ZeroDivisionError`, `ValueError`...) sang tiếng Việt |
 | `public/sw.js` | Lưu app vào máy để chạy offline |
-| `scripts/test-explain.mjs` | Chạy thử bộ luật: `npm test` |
+| `scripts/test-explain.mjs` | Chạy thử bộ luật lỗi cú pháp: `npm test` |
+| `scripts/test-run.mjs` | Chạy thử phần chạy chương trình và bộ luật lỗi khi chạy: `npm test` |
 | `capacitor.config.json` | Cấu hình app Android (tên app, mã app) |
 | `android/` | Project Android do Capacitor tạo, mở bằng Android Studio |
 
@@ -101,5 +116,7 @@ Mở `lib/explainPython.js`, thêm một dòng vào mảng `RULES`:
 ```
 
 Để biết thông báo gốc, bấm "Thông báo gốc của Python" ở bảng Lời phê. Thêm trường hợp vào `scripts/test-explain.mjs` rồi chạy `npm test` để kiểm tra.
+
+Lỗi khi chạy (hiện ở khung Kết quả chạy) dịch trong `lib/explainRuntime.js`, cũng theo cách thêm một dòng vào mảng `RULES`. Mỗi luật so khớp với dòng cuối của thông báo lỗi, ví dụ `ZeroDivisionError: division by zero`. Thêm trường hợp vào `scripts/test-run.mjs` để kiểm tra.
 
 Khi deploy bản mới có thay đổi, tăng số phiên bản `CACHE` trong `public/sw.js` để máy học sinh tải bản mới.

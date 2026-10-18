@@ -1,10 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CodeEditor from '@/components/CodeEditor';
 import ResultPanel from '@/components/ResultPanel';
+import RunPanel from '@/components/RunPanel';
 import { checkPython, onPythonStatus, startPython } from '@/lib/pyChecker';
 import { explainPython } from '@/lib/explainPython';
+import { explainRuntime } from '@/lib/explainRuntime';
+import { useRunner } from '@/lib/useRunner';
 import { SAMPLES } from '@/lib/samples';
 
 const STORAGE_KEY = 'soat-loi-python:code';
@@ -21,6 +24,7 @@ const STATUS_TEXT = {
   loading: 'Đang tải bộ kiểm tra (chỉ lần đầu)',
   ready: 'Sẵn sàng, không cần mạng',
   error: 'Chưa tải được bộ kiểm tra',
+  restarting: 'Đang khởi động lại Python',
 };
 
 export default function Home() {
@@ -28,6 +32,7 @@ export default function Home() {
   const codeRef = useRef('');
   const saveTimer = useRef(null);
   const sampleIdx = useRef(0);
+  const wasReady = useRef(false);
 
   const [initialCode, setInitialCode] = useState(null);
   const [pyStatus, setPyStatus] = useState('idle');
@@ -36,13 +41,17 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [checkedCode, setCheckedCode] = useState('');
   const [stale, setStale] = useState(false);
+  const { run: program, start, send, endInput, stop, block, reset, cancel } = useRunner();
 
   useEffect(() => {
     const saved = loadSaved();
     codeRef.current = saved;
     setInitialCode(saved);
     startPython();
-    const off = onPythonStatus(setPyStatus);
+    const off = onPythonStatus((s) => {
+      if (s === 'ready') wasReady.current = true;
+      setPyStatus(s);
+    });
     const sync = () => setOnline(navigator.onLine);
     sync();
     window.addEventListener('online', sync);
@@ -59,18 +68,24 @@ export default function Home() {
 
   const run = useCallback(async () => {
     const code = codeRef.current;
-    if (!code.trim()) { setResult(null); setView('nocode'); return; }
+    if (!code.trim()) { setResult(null); setView('nocode'); reset(); return; }
+    cancel(); // dừng chương trình đang chạy (nếu có) để Python rảnh mà kiểm tra
     setView('checking');
     try {
       const raw = await checkPython(code);
-      setResult(explainPython(raw, code));
+      const res = explainPython(raw, code);
+      setResult(res);
       setCheckedCode(code);
       setStale(false);
       setView('done');
+      // Đúng cú pháp thì chạy luôn để xem kết quả
+      if (res.ok) start(code);
+      else block(code);
     } catch {
       setView('fail');
+      reset();
     }
-  }, []);
+  }, [start, block, reset, cancel]);
 
   const loadSample = () => {
     const s = SAMPLES[sampleIdx.current % SAMPLES.length];
@@ -78,18 +93,29 @@ export default function Home() {
     editor.current?.setValue(s);
     setResult(null);
     setView('empty');
+    reset();
   };
 
   const clearAll = () => {
     editor.current?.setValue('');
     setResult(null);
     setView('empty');
+    reset();
   };
 
   const retry = () => { startPython(); run(); };
   const goTo = (line, col) => editor.current?.goTo(line, col);
 
-  const marker = view === 'done' && result && !result.ok && !stale ? result : null;
+  // Gạch đỏ dòng bị lỗi khi chạy (vd. chia cho 0), nếu không có lỗi cú pháp
+  const runtimeMarker = useMemo(() => {
+    const line = program.status === 'error' && program.error?.line;
+    if (!line) return null;
+    const text = program.code.split('\n')[line - 1] ?? '';
+    const col = text.length - text.trimStart().length + 1;
+    return { line, col, endLine: line, endCol: text.length + 1, title: explainRuntime(program.error).title };
+  }, [program.status, program.error, program.code]);
+
+  const marker = stale ? null : (view === 'done' && result && !result.ok ? result : runtimeMarker);
   const busy = view === 'checking';
 
   return (
@@ -97,11 +123,11 @@ export default function Home() {
       <header className="masthead">
         <div>
           <h1>Soát lỗi Python</h1>
-          <p className="lede">Dán bài làm, bấm Kiểm tra: chỉ ra dòng viết sai cú pháp và cách sửa. Chạy ngay trên máy, không gửi code đi đâu.</p>
+          <p className="lede">Dán bài làm, bấm Kiểm tra: chỉ ra dòng viết sai cú pháp và cách sửa, rồi chạy thử chương trình. Chạy ngay trên máy, không gửi code đi đâu.</p>
         </div>
         <p className={`status status-${pyStatus}`} role="status">
           <span className="dot" aria-hidden="true" />
-          {STATUS_TEXT[pyStatus]}
+          {STATUS_TEXT[pyStatus === 'loading' && wasReady.current ? 'restarting' : pyStatus]}
           {!online && pyStatus === 'ready' && <span className="offline">Đang offline</span>}
         </p>
       </header>
@@ -124,19 +150,29 @@ export default function Home() {
           </div>
         </section>
 
-        <ResultPanel
-          view={view}
-          result={result}
-          stale={stale}
-          code={checkedCode}
-          pyStatus={pyStatus}
-          onGoTo={goTo}
-          onRetry={retry}
-        />
+        <div className="side">
+          <ResultPanel
+            view={view}
+            result={result}
+            stale={stale}
+            code={checkedCode}
+            pyStatus={pyStatus}
+            onGoTo={goTo}
+            onRetry={retry}
+          />
+          <RunPanel
+            run={program}
+            stale={stale}
+            onSend={send}
+            onEndInput={endInput}
+            onStop={stop}
+            onGoTo={goTo}
+          />
+        </div>
       </main>
 
       <footer className="foot">
-        Chỉ kiểm tra cú pháp. Code đúng cú pháp vẫn có thể sai thuật toán hoặc sai kết quả.
+        Chạy thử chỉ cho biết kết quả với dữ liệu bạn nhập. Code chạy đúng một lần vẫn có thể sai thuật toán hoặc sai với bộ test khác.
       </footer>
     </div>
   );
